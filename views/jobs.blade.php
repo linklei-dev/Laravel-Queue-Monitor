@@ -19,7 +19,7 @@
     </h1>
 
     @isset($metrics)
-
+        <p>@lang("Métricas nos últimos :days dias.", ['days' => $timeFrame])</p>
         <div class="flex flex-wrap -mx-4 mb-2">
 
             @foreach($metrics->all() as $metric)
@@ -220,25 +220,23 @@
 
                         </td>
 
-                        @if(config('queue-monitor.ui.allow_deletion'))
+                        <td class="p-4 text-gray-800 text-sm leading-5 border-b border-gray-200">
 
-                            <td class="p-4 text-gray-800 text-sm leading-5 border-b border-gray-200">
-
+                            @if(config('queue-monitor.ui.allow_deletion'))
                                 <form action="{{ route('queue-monitor::destroy', [$job]) }}" method="post">
-
                                     @csrf
                                     @method('delete')
 
                                     <button class="px-3 py-1 bg-red-200 hover:bg-red-300 text-red-800 text-xs font-medium uppercase tracking-wider text-white rounded">
                                         @lang('Delete')
                                     </button>
-
                                 </form>
+                            @endif
 
-                            </td>
-
-                        @endif
-
+                            <button class="px-3 py-1 bg-red-200 hover:bg-red-300 text-red-800 text-xs font-medium uppercase tracking-wider text-white rounded" title="@lang("Exibir dados para execução (payload).")">
+                                @lang("Show Payload")
+                            </button>
+                        </td>
                     </tr>
 
                 @empty

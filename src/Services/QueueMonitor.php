@@ -8,6 +8,7 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use romanzipp\QueueMonitor\Models\Contracts\MonitorContract;
 use romanzipp\QueueMonitor\Traits\IsMonitored;
 use Throwable;
@@ -117,14 +118,44 @@ class QueueMonitor
 
         $model = self::getModel();
 
-        $model::query()->create([
+        Log::debug('getJobId: ', ['jobId' => self::getJobId($job)]);
+
+        $data = [
             'job_id' => self::getJobId($job),
             'name' => $job->resolveName(),
             'queue' => $job->getQueue(),
             'started_at' => $now,
             'started_at_exact' => $now->format(self::TIMESTAMP_EXACT_FORMAT),
             'attempt' => $job->attempts(),
-        ]);
+
+            'uuid' => $job->uuid(),
+            'connection' => $job->getConnectionName(),
+            'queue' => $job->getQueue(),
+            'payload' => json_encode($job->payload()),
+        ];
+
+        // ////////////////////////////////////////
+
+        /*
+        Exemplo de dados em $event->job->payload() = array:
+        [uuid] => a505a60c-006e-4193-ae63-5169dc8abacf
+        [displayName] => Modules\\Notification\\Jobs\\SendEmailRegisterJob
+        [job] => Illuminate\\Queue\\CallQueuedHandler@call
+        [maxTries] =>
+        [maxExceptions] =>
+        [failOnTimeout] =>
+        [backoff] =>
+        [timeout] =>
+        [retryUntil] =>
+        [data] => Array
+            (
+                [commandName] => Modules\\Notification\\Jobs\\SendEmailRegisterJob
+                [command] => O:46:\"Modules\\Notification\\Jobs\\SendEmailRegisterJob\":12:{s:10:\"\u0000*\u0000user_id\";i:848;s:13:\"\u0000*\u0000user_email\";s:22:\"roberzguerra@gmail.com\";s:3:\"job\";N;s:10:\"connection\";N;s:5:\"queue\";s:10:\"send-email\";s:15:\"chainConnection\";N;s:10:\"chainQueue\";N;s:19:\"chainCatchCallbacks\";N;s:5:\"delay\";O:13:\"Carbon\\Carbon\":3:{s:4:\"date\";s:26:\"2022-06-23 14:48:00.000000\";s:13:\"timezone_type\";i:3;s:8:\"timezone\";s:17:\"America/Sao_Paulo\";}s:11:\"afterCommit\";N;s:10:\"middleware\";a:0:{}s:7:\"chained\";a:0:{}}
+            )
+        */
+        // //////////////////////////////////////////////////
+
+        $model::query()->create($data);
     }
 
     /**

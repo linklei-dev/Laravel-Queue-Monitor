@@ -7,6 +7,7 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\QueueManager;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use romanzipp\QueueMonitor\Models\Monitor;
@@ -54,11 +55,15 @@ class QueueMonitorProvider extends ServiceProvider
         $manager = app(QueueManager::class);
 
         $manager->before(static function (JobProcessing $event) {
+            Log::debug('JOB before: ', [$event->job->getJobId()]);
             QueueMonitor::handleJobProcessing($event);
         });
 
         $manager->after(static function (JobProcessed $event) {
-            QueueMonitor::handleJobProcessed($event);
+            // Considera como Job Processado apenas se nao ocorreu falha:
+            if ( ! $event->job->hasFailed()) {
+                QueueMonitor::handleJobProcessed($event);
+            }
         });
 
         $manager->failing(static function (JobFailed $event) {

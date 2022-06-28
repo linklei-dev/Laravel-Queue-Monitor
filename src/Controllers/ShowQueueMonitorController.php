@@ -11,6 +11,7 @@ use romanzipp\QueueMonitor\Controllers\Payloads\Metric;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metrics;
 use romanzipp\QueueMonitor\Models\Contracts\MonitorContract;
 use romanzipp\QueueMonitor\Services\QueueMonitor;
+use TCG\Voyager\Facades\Voyager;
 
 class ShowQueueMonitorController
 {
@@ -21,6 +22,8 @@ class ShowQueueMonitorController
      */
     public function __invoke(Request $request)
     {
+        $timeFrame = config('queue-monitor.ui.metrics_time_frame') ?? 2;
+
         $data = $request->validate([
             'type' => ['nullable', 'string', Rule::in(['all', 'running', 'failed', 'succeeded'])],
             'queue' => ['nullable', 'string'],
@@ -75,11 +78,20 @@ class ShowQueueMonitorController
             $metrics = $this->collectMetrics();
         }
 
-        return view('queue-monitor::jobs', [
+        /*return view('queue-monitor::jobs', [
             'jobs' => $jobs,
             'filters' => $filters,
             'queues' => $queues,
             'metrics' => $metrics,
+            'timeFrame' => $timeFrame,
+        ]);*/
+
+        return Voyager::view('queue-monitor::voyager.monitor_jobs', [
+            'jobs' => $jobs,
+            'filters' => $filters,
+            'queues' => $queues,
+            'metrics' => $metrics,
+            'timeFrame' => $timeFrame,
         ]);
     }
 
