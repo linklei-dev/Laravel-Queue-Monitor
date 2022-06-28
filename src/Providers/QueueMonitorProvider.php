@@ -61,7 +61,7 @@ class QueueMonitorProvider extends ServiceProvider
 
         $manager->after(static function (JobProcessed $event) {
             // Considera como Job Processado apenas se nao ocorreu falha:
-            if (!$event->job->hasFailed()) {
+            if ( ! $event->job->hasFailed()) {
                 QueueMonitor::handleJobProcessed($event);
             }
         });
