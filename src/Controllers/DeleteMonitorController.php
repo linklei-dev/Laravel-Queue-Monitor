@@ -10,8 +10,7 @@ class DeleteMonitorController
 {
     public function __invoke(Request $request, Monitor $monitor): RedirectResponse
     {
-
-        //$monitor->delete();
+        // $monitor->delete();
 
         return redirect()->route('queue-monitor::index');
     }

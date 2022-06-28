@@ -144,11 +144,13 @@ class ShowQueueMonitorController
      *
      * @param Request $request
      * @param Monitor $monitor
+     *
      * @return bool[]
      */
     public function destroy(Request $request, Monitor $monitor)
     {
         $monitor->forceDelete();
+
         return [
             'status' => true,
         ];
@@ -162,14 +164,13 @@ class ShowQueueMonitorController
         ];
 
         if ($monitor) {
-
             $date_now_timestamp = Carbon::now()->getTimestamp();
 
             // Para testes:
-            //$class_job_name = "\\{$monitor->display_name}";
-            //dd($class_job_name::dispatch());
-            //dd($monitor->payload);
-            //7af8c597-ae38-4a51-8531-66184746fb85
+            // $class_job_name = "\\{$monitor->display_name}";
+            // dd($class_job_name::dispatch());
+            // dd($monitor->payload);
+            // 7af8c597-ae38-4a51-8531-66184746fb85
 
             Artisan::call("queue:retry {$monitor->uuid}");
             $output = Artisan::output();
@@ -186,8 +187,6 @@ class ShowQueueMonitorController
 
     public function batch_action(Request $request)
     {
-
-
         dd($request->all());
     }
 }

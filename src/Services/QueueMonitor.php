@@ -2,8 +2,6 @@
 
 namespace romanzipp\QueueMonitor\Services;
 
-use romanzipp\QueueMonitor\Models\Job as JobModel;
-use Facade\Ignition\JobRecorder\JobRecorder;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
@@ -32,16 +30,17 @@ class QueueMonitor
 
     /**
      * Model da fila de Jobs.
+     *
      * @var \romanzipp\QueueMonitor\Models\Contracts\JobContract
      */
     public static $model_queue_jobs;
 
     /**
      * Model da fila de Jobs.
+     *
      * @var \romanzipp\QueueMonitor\Models\Contracts\JobFailedContract
      */
     public static $model_jobs_failed;
-
 
     /**
      * Get the model used to store the monitoring data.
@@ -269,7 +268,8 @@ class QueueMonitor
     }
 
     /**
-     * Retorna um array com os tipos de Filas disponiveis no config queues.queue_types
+     * Retorna um array com os tipos de Filas disponiveis no config queues.queue_types.
+     *
      * @return array
      */
     public static function getListQueueTypes(): array
@@ -278,6 +278,7 @@ class QueueMonitor
         if ($list) {
             $list = array_keys($list);
         }
+
         return $list;
     }
 }

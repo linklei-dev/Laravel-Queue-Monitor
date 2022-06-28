@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait Attributes
 {
-    /// Scopes /////////////////////////////
+    // / Scopes /////////////////////////////
 
     public function scopeOrdered(Builder $query): void
     {
@@ -15,7 +15,7 @@ trait Attributes
             ->orderBy('id', 'desc');
     }
 
-    /// Other Methods ///////////////////////////
+    // / Other Methods ///////////////////////////
 
     public function getDisplayNameAttribute()
     {
@@ -39,7 +39,7 @@ trait Attributes
 
     public function getTimeoutAtAttribute()
     {
-        return !is_null($this->payload['timeout_at']) ? new \Carbon\Carbon($this->payload['timeout_at']) : null;
+        return ! is_null($this->payload['timeout_at']) ? new \Carbon\Carbon($this->payload['timeout_at']) : null;
     }
 
     public function getCommandNameAttribute()
