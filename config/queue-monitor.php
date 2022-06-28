@@ -15,6 +15,16 @@ return [
      */
     'model' => \romanzipp\QueueMonitor\Models\Monitor::class,
 
+    /**
+     * Set the model used for register your Queues Jobs:
+     */
+    'model_queue_jobs' => \romanzipp\QueueMonitor\Models\Job::class,
+
+    /**
+     * Set the model used for register your Queues Jobs Faileds:
+     */
+    'model_jobs_failed' => \romanzipp\QueueMonitor\Models\JobFailed::class,
+
     /*
      * Specify the max character length to use for storing exception backtraces.
      */

@@ -68,7 +68,24 @@
                                         @lang('Filter')
                                     </button>
                                 </div>
+                            </form>
+                        </div>
 
+                        <div class="row">
+
+                            <form action="{{ route('queue-monitor::batch_action') }}" id="formBatchAction" class="form-inline" method="get">
+                                <div class="form-group col-sm-6">
+                                    <label for="select_batch_actions">@lang('Ações em lote')</label>
+                                    <select name="queue" id="select_batch_actions" class="form-control">
+                                        <option value="">---</option>
+                                        <option value="destroy">@lang("Delete")</option>
+                                        <option value="restart_job_monitor">@lang("Restart")</option>
+                                    </select>
+                                    <input type="hidden" value="" name="ids" id="input_ids" />
+                                    <button type="submit" class="btn btn-primary">
+                                        @lang('Executar')
+                                    </button>
+                                </div>
                             </form>
                         </div>
 
@@ -115,16 +132,16 @@
                                     @if(config('queue-monitor.ui.show_custom_data'))
                                         <th class="">@lang('Custom Data')</th>
                                     @endif
-                                    <th class="actions text-right dt-not-orderable">
+                                    <th class="actions dt-not-orderable">
                                         {{ __('voyager::generic.actions') }}
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($jobs as $job)
-                                        <tr>
+                                        <tr class="item_{{ $job->id }}">
                                             <td>
-                                                <input type="checkbox" name="row_id" id="checkbox_{{ $job->id }}" value="{{ $job->id }}">
+                                                <input type="checkbox" name="row_id" class="input_check" id="checkbox_{{ $job->id }}" value="{{ $job->id }}">
                                                 {{ $job->id }}
                                             </td>
                                             <td class="">
@@ -182,22 +199,22 @@
                                                 @endif
                                             </td>
 
-                                            <th class="">
+                                            <td class="">
                                                 {{ $job->getElapsedInterval()->format('%H:%I:%S') }}
-                                            </th>
-                                            <th class="">
+                                            </td>
+                                            <td class="">
                                                 {{ $job->started_at->translatedFormat('d/m/Y H:i:s') }}
                                                 <div class="text-detail">
                                                     <div class="text-muted">{{ $job->started_at->diffForHumans() }}</div>
                                                 </div>
-                                            </th>
-                                            <th class="">
+                                            </td>
+                                            <td class="">
                                                 @if($job->hasFailed() && $job->exception_message !== null)
                                                     <textarea rows="4" class="form-control" readonly>{{ $job->exception_message }}</textarea>
                                                 @else
                                                     -
                                                 @endif
-                                            </th>
+                                            </td>
 
                                             @if(config('queue-monitor.ui.show_custom_data'))
                                                 <td class="">
@@ -206,9 +223,9 @@
                                             @endif
 
                                             <td class="">
-                                                <button class="btn btn-danger" data-id="{{ $job->id }}">@lang("Delete")</button>
-                                                <button class="btn btn-primary" data-id="{{ $job->id }}">@lang("Restart")</button>
-                                                <button class="btn btn-default" data-id="{{ $job->id }}">@lang("Show Payload")</button>
+                                                <button class="btn btn-danger btn-delete" data-id="{{ $job->id }}">@lang("Delete")</button>
+                                                <button class="btn btn-primary btn-restart" data-id="{{ $job->id }}">@lang("Restart")</button>
+                                                <button class="btn btn-default btn-show-payload" data-id="{{ $job->id }}">@lang("Show Payload")</button>
                                             </td>
                                         </tr>
                                     @empty
@@ -265,113 +282,144 @@
                 </div>
             </div>
         </div>
-
     </div>
 
 @endsection
 
-@section('css')
-    <style>
-        .page-monitor-jobs .page-title {
-            height: unset;
-            margin: 0;
-        }
-        .page-monitor-jobs .sub-title {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .page-monitor-jobs .div-metrics {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-        .page-monitor-jobs .div-metrics .div-item {
-            flex-grow: 1;
-            padding: 5px;
-        }
-        .page-monitor-jobs .div-metrics .panel {
-            min-height: 100px;
-        }
-        .page-monitor-jobs .div-metrics .panel .panel-heading {
-            padding: 2px;
-            font-weight: 700;
-        }
-        .page-monitor-jobs .div-metrics .panel .panel-body {
-            font-size: 18px;
-            font-weight: 800;
-        }
-        .page-monitor-jobs .div-metrics .text-has-changed {
-            font-weight: 700;
-            font-size: 12px;
-        }
-
-        #tableListJobs .label-uuid {
-            font-size: 10px;
-        }
-        #tableListJobs .text-detail {
-            font-size: 12px;
-            padding: 0 0 4px 0;
-        }
-        #tableListJobs .text-detail .text-title {
-            font-weight: 600;
-        }
-        #tableListJobs textarea {
-            width: 100%;
-            height: 54px;
-            resize: auto;
-        }
-
-        .form-search .input-date {
-            width: 120px;
-            display: inline-block;
-        }
-        .form-search .input-show {
-            width: 100px;
-            display: inline-block;
-        }
-        .form-search .btn-search {
-            margin: 0;
-        }
-    </style>
-@endsection
-
 @section('javascript')
-
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/jszip-2.5.0/af-2.3.7/b-2.2.2/b-colvis-2.2.2/b-html5-2.2.2/b-print-2.2.2/cr-1.5.5/date-1.1.2/fc-4.0.2/fh-3.2.2/kt-2.6.4/r-2.2.9/rg-1.1.4/rr-1.2.8/sc-2.0.5/sb-1.3.2/sp-2.0.0/sl-1.3.4/sr-1.1.0/datatables.min.css"/>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/jszip-2.5.0/af-2.3.7/b-2.2.2/b-colvis-2.2.2/b-html5-2.2.2/b-print-2.2.2/cr-1.5.5/date-1.1.2/fc-4.0.2/fh-3.2.2/kt-2.6.4/r-2.2.9/rg-1.1.4/rr-1.2.8/sc-2.0.5/sb-1.3.2/sp-2.0.0/sl-1.3.4/sr-1.1.0/datatables.min.js"></script>
-
-    <script>
+    <script type="text/javascript">
         $(document).ready(function () {
 
-            /*
-            let tableListJobsOptions = {!! json_encode(
-                [
-                    "dom" => 'Bfrtlip',
-                    "buttons" => [
-                        'copyHtml5',
-                        'excelHtml5',
-                        'csvHtml5',
-                        'pdfHtml5',
-                        'colvis',
-                    ],
-                    //"order" => $orderColumn,
-                    "language" => __('voyager::datatable'),
-                    "columnDefs" => [
-                        ['targets' => 'dt-not-orderable', 'searchable' =>  false, 'orderable' => false],
-                    ],
-                    "ordering" => true,
-                    "processing" => true,
-                    "serverSide" => true,
-                    "ajax" => route('voyager.users_engagement.historic'),
-                    //"columns" => \dataTypeTableColumns($dataType, $showCheckboxColumn),
-                ]
-            , true) !!};
+            let $tableListJobs = $("#tableListJobs");
 
-            let $tableEngagementHistoric = $('#tableListJobs').DataTable(tableListJobsOptions);
-            */
+            // Seleciona/deseleciona todas as linhsa da tabela:
+            $tableListJobs.find(".select_all").on('change', function(e) {
+                if (this.checked) {
+                    // Seleciona todos:
+                    $tableListJobs.find('.input_check').prop('checked', true);
+                } else {
+                    // Deseleciona todos:
+                    $tableListJobs.find('.input_check').prop('checked', false);
+                }
+            });
+
+            $tableListJobs.find(".btn-delete").on('click', function(e) {
+                e.preventDefault();
+                let $this = $(this);
+                let id = $this.data('id');
+
+                Swal.fire({
+                    html: "<p>Tem certeza que deseja deletar este Job?</p>",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    showConfirmButton: true,
+                    scrollbarPadding: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonText: 'Sim, excluir!',
+                    cancelButtonText: 'Não, cancelar',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-secondary'
+                    },
+                    buttonsStyling: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: () => {
+                        api
+                            .delete(route('queue-monitor::delete_job_monitor', [ id ]))
+                            .then((response) => {
+                                if (response.status) {
+                                    Swal.fire({
+                                        html: "Job removido",
+                                        icon: "success",
+                                    });
+                                    $tableListJobs.find(".item_" + id).remove();
+                                }
+
+                            }).catch((response) => {
+                                console.error("Error", response);
+                                Swal.fire({
+                                    html: "Ops! Ocorreu um erro inesperado.",
+                                    icon: "error",
+                                });
+                        });
+
+                    },
+                });
+            });
+
+            $tableListJobs.find(".btn-restart").on('click', function(e) {
+                e.preventDefault();
+                let $this = $(this);
+                let id = $this.data('id');
+
+                Swal.fire({
+                    html: "<p>Tem certeza que deseja Reiniciar este Job?</p>",
+                    icon: 'info',
+                    showCancelButton: true,
+                    showConfirmButton: true,
+                    scrollbarPadding: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonText: 'Sim, enviar para a fila!',
+                    cancelButtonText: 'Não, cancelar',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-secondary'
+                    },
+                    buttonsStyling: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: () => {
+                        api
+                            .post(route('queue-monitor::restart_job_monitor', [ id ]))
+                            .then((response) => {
+                                console.log('response: ', response);
+                                if (response.data.status) {
+                                    Swal.fire({
+                                        html: "Job enviado para a fila<br><pre>" + response.data.message + "</pre>",
+                                        icon: "success",
+                                    });
+                                    $tableListJobs.find(".item_" + id).remove();
+                                } else {
+                                    Swal.fire({
+                                        html: "<pre>" + response.data.message + "</pre>",
+                                        icon: "error",
+                                    });
+                                }
+                            }).catch((response) => {
+                                console.error("Error", response);
+                                Swal.fire({
+                                    html: "Ops! Ocorreu um erro inesperado.",
+                                    icon: "error",
+                                });
+                            });
+                    },
+                });
+            });
+
+            let $formBatchAction = $("#formBatchAction");
+            $formBatchAction.on('submit', function (e) {
+                e.preventDefault();
+                let $inputIds = $formBatchAction.find('#input_ids');
+                let $selectBatchActions = $formBatchAction.find('#select_batch_actions');
+
+                $inputIds.val('');
+                let listIds = [];
+                $tableListJobs
+                    .find('.input_check:checked')
+                    .serializeArray()
+                    .map(function(item, i) {
+                        listIds.push(item.value);
+                    });
+                $inputIds.val(listIds);
+
+                console.log($selectBatchActions.val(), listIds.length);
+                if ($selectBatchActions.val() && listIds.length > 0) {
+                    //$formBatchAction[0].submit();
+
+                }
+                return false;
+            });
         });
     </script>
 @endsection

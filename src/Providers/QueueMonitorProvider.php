@@ -10,6 +10,7 @@ use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use romanzipp\QueueMonitor\Models\Job;
 use romanzipp\QueueMonitor\Models\Monitor;
 use romanzipp\QueueMonitor\Routes\QueueMonitorRoutes;
 use romanzipp\QueueMonitor\Services\QueueMonitor;
@@ -91,5 +92,6 @@ class QueueMonitorProvider extends ServiceProvider
         }
 
         QueueMonitor::$model = config('queue-monitor.model') ?: Monitor::class;
+        QueueMonitor::$model_queue_jobs = config('queue-monitor.model_queue_jobs') ?: Job::class;
     }
 }

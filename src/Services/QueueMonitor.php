@@ -2,11 +2,14 @@
 
 namespace romanzipp\QueueMonitor\Services;
 
+use romanzipp\QueueMonitor\Models\Job as JobModel;
+use Facade\Ignition\JobRecorder\JobRecorder;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Queue\Jobs\Job;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use romanzipp\QueueMonitor\Models\Contracts\MonitorContract;
@@ -28,6 +31,19 @@ class QueueMonitor
     public static $model;
 
     /**
+     * Model da fila de Jobs.
+     * @var \romanzipp\QueueMonitor\Models\Contracts\JobContract
+     */
+    public static $model_queue_jobs;
+
+    /**
+     * Model da fila de Jobs.
+     * @var \romanzipp\QueueMonitor\Models\Contracts\JobFailedContract
+     */
+    public static $model_jobs_failed;
+
+
+    /**
      * Get the model used to store the monitoring data.
      *
      * @return \romanzipp\QueueMonitor\Models\Contracts\MonitorContract
@@ -35,6 +51,16 @@ class QueueMonitor
     public static function getModel(): MonitorContract
     {
         return new self::$model();
+    }
+
+    public static function getModelQueueJobs(): \romanzipp\QueueMonitor\Models\Contracts\JobContract
+    {
+        return new self::$model_queue_jobs();
+    }
+
+    public static function getModelJobsFailed(): JobFailed
+    {
+        return new self::$model_jobs_failed();
     }
 
     /**
@@ -131,7 +157,7 @@ class QueueMonitor
             'uuid' => $job->uuid(),
             'connection' => $job->getConnectionName(),
             'queue' => $job->getQueue(),
-            'payload' => json_encode($job->payload()),
+            'payload' => $job->payload(),
         ];
 
         // ////////////////////////////////////////
@@ -230,5 +256,28 @@ class QueueMonitor
         return array_key_exists(IsMonitored::class, ClassUses::classUsesRecursive(
             $job->resolveName()
         ));
+    }
+
+    /**
+     * Retorna toda a config de Tipos de Filas no config queue.queue_types.
+     *
+     * @return array
+     */
+    public static function getQueueTypes(): array
+    {
+        return config('queue.queue_types', []);
+    }
+
+    /**
+     * Retorna um array com os tipos de Filas disponiveis no config queues.queue_types
+     * @return array
+     */
+    public static function getListQueueTypes(): array
+    {
+        $list = self::getQueueTypes();
+        if ($list) {
+            $list = array_keys($list);
+        }
+        return $list;
     }
 }

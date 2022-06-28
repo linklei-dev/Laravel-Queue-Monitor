@@ -5,11 +5,14 @@ namespace romanzipp\QueueMonitor\Controllers;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metric;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metrics;
 use romanzipp\QueueMonitor\Models\Contracts\MonitorContract;
+use romanzipp\QueueMonitor\Models\Job;
+use romanzipp\QueueMonitor\Models\Monitor;
 use romanzipp\QueueMonitor\Services\QueueMonitor;
 use TCG\Voyager\Facades\Voyager;
 
@@ -20,7 +23,7 @@ class ShowQueueMonitorController
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
-    public function __invoke(Request $request)
+    public function index(Request $request)
     {
         $timeFrame = config('queue-monitor.ui.metrics_time_frame') ?? 2;
 
@@ -95,7 +98,7 @@ class ShowQueueMonitorController
         ]);
     }
 
-    public function collectMetrics(): Metrics
+    private function collectMetrics(): Metrics
     {
         $timeFrame = config('queue-monitor.ui.metrics_time_frame') ?? 2;
 
@@ -134,5 +137,57 @@ class ShowQueueMonitorController
             ->push(
                 new Metric('Average Execution Time', $aggregatedInfo->average_time_elapsed ?? 0, $aggregatedComparisonInfo->average_time_elapsed, '%0.2fs')
             );
+    }
+
+    /**
+     * Deleta registro de JobMonitor.
+     *
+     * @param Request $request
+     * @param Monitor $monitor
+     * @return bool[]
+     */
+    public function destroy(Request $request, Monitor $monitor)
+    {
+        $monitor->forceDelete();
+        return [
+            'status' => true,
+        ];
+    }
+
+    public function restart_job_monitor(Request $request, Monitor $monitor)
+    {
+        $respose = [
+            'status' => false,
+            'message' => '',
+        ];
+
+        if ($monitor) {
+
+            $date_now_timestamp = Carbon::now()->getTimestamp();
+
+            // Para testes:
+            //$class_job_name = "\\{$monitor->display_name}";
+            //dd($class_job_name::dispatch());
+            //dd($monitor->payload);
+            //7af8c597-ae38-4a51-8531-66184746fb85
+
+            Artisan::call("queue:retry {$monitor->uuid}");
+            $output = Artisan::output();
+            $compare = "The failed job [{$monitor->uuid}] has been pushed back onto the queue!\n";
+            if ($output == $compare) {
+                $respose['status'] = true;
+                $monitor->forceDelete();
+            }
+            $respose['message'] = $output;
+
+            return $respose;
+        }
+    }
+
+    public function batch_action(Request $request)
+    {
+
+
+        dd($request->all());
     }
 }
