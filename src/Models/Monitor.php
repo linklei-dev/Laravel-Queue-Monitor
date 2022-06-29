@@ -324,7 +324,7 @@ class Monitor extends Model implements MonitorContract
 
     public function getTimeoutAtAttribute()
     {
-        return !is_null($this->payload['timeout_at']) ? new \Carbon\Carbon($this->payload['timeout_at']) : null;
+        return ! is_null($this->payload['timeout_at']) ? new \Carbon\Carbon($this->payload['timeout_at']) : null;
     }
 
     public function getCommandNameAttribute()

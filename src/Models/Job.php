@@ -31,13 +31,12 @@ class Job extends \Illuminate\Database\Eloquent\Model implements JobContract
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        //$this->table = Config::get('queue.connections.' . (Config::get('queue.default', 'database')) . '.table', 'jobs');
+        // $this->table = Config::get('queue.connections.' . (Config::get('queue.default', 'database')) . '.table', 'jobs');
 
         $this->setTable(config('queue.connections.' . config('queue.default') . '.table'), 'jobs');
 
         /*if ($connection = config('queue.default')) {
             $this->setConnection($connection);
         }*/
-
     }
 }

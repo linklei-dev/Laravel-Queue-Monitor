@@ -2,7 +2,6 @@
 
 namespace romanzipp\QueueMonitor\Controllers;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +14,6 @@ use TCG\Voyager\Facades\Voyager;
 
 class JobsController
 {
-
     public function list_jobs(Request $request)
     {
         $list_queue_types = QueueMonitor::getListQueueTypes();

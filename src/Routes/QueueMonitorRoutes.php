@@ -19,7 +19,7 @@ class QueueMonitorRoutes
             $this->get('list-jobs', '\romanzipp\QueueMonitor\Controllers\JobsController@list_jobs')->name('queue-monitor::list_jobs');
 
             if (config('queue-monitor.ui.allow_deletion')) {
-                //$this->delete('monitors/{monitor}', '\romanzipp\QueueMonitor\Controllers\DeleteMonitorController')->name('queue-monitor::destroy');
+                // $this->delete('monitors/{monitor}', '\romanzipp\QueueMonitor\Controllers\DeleteMonitorController')->name('queue-monitor::destroy');
                 $this->delete('delete-job-monitor/{monitor}', '\romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController@destroy')->name('queue-monitor::delete_job_monitor');
             }
 
