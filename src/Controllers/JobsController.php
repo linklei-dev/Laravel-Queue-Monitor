@@ -18,26 +18,17 @@ class JobsController
 
     public function list_jobs(Request $request)
     {
+        $list_queue_types = QueueMonitor::getListQueueTypes();
 
         $data = $request->validate([
-            'type' => ['nullable', 'string', Rule::in(['all', 'running', 'failed', 'succeeded'])],
-            'queue' => ['nullable', 'string'],
+            //'type' => ['nullable', 'string', Rule::in(['all', 'running', 'failed', 'succeeded'])],
+            'queue' => ['nullable', 'string', Rule::in($list_queue_types)],
         ]);
 
         $filters = [
             'type' => $data['type'] ?? 'all',
             'queue' => $data['queue'] ?? 'all',
         ];
-
-        $queues = QueueMonitor::getModel()
-            ->newQuery()
-            ->select('queue')
-            ->groupBy('queue')
-            ->get()
-            ->map(function (MonitorContract $monitor) {
-                return $monitor->queue;
-            })
-            ->toArray();
 
         $jobs = QueueMonitor::getModelQueueJobs()
             ->newQuery()
@@ -57,7 +48,7 @@ class JobsController
         return Voyager::view('queue-monitor::voyager.list_jobs', [
             'jobs' => $jobs,
             'filters' => $filters,
-            'queues' => $queues,
+            'list_queue_types' => $list_queue_types,
             'metrics' => $metrics,
         ]);
     }

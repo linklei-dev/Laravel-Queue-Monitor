@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use romanzipp\QueueMonitor\Models\Contracts\MonitorContract;
+use romanzipp\QueueMonitor\Services\QueueMonitor;
 use Throwable;
 
 /**
@@ -122,6 +123,22 @@ class Monitor extends Model implements MonitorContract
      * Methods
      *--------------------------------------------------------------------------
      */
+
+    public function getJobStatusHtml()
+    {
+        $list = QueueMonitor::getListJobStatusData();
+        $data = null;
+        $html = '';
+        if (!$this->isFinished()) {
+            $data = $list[QueueMonitor::$STATUS_JOB_RUNNING];
+        } else if ($this->hasSucceeded()) {
+            $data = $list[QueueMonitor::$STATUS_JOB_SUCCEEDED];
+        } else {
+            $data = $list[QueueMonitor::$STATUS_JOB_FAILED];
+        }
+        $html = "<span class=\"label {$data['css_class']}\">{$data['label']}</span>";
+        return $html;
+    }
 
     public function getStartedAtExact(): ?Carbon
     {

@@ -27,9 +27,12 @@ class ShowQueueMonitorController
     {
         $timeFrame = config('queue-monitor.ui.metrics_time_frame') ?? 2;
 
+        $list_queue_types = QueueMonitor::getListQueueTypes();
+        $list_job_status_data = QueueMonitor::getListJobStatusData();
+
         $data = $request->validate([
-            'type' => ['nullable', 'string', Rule::in(['all', 'running', 'failed', 'succeeded'])],
-            'queue' => ['nullable', 'string'],
+            'type' => ['nullable', 'string', Rule::in(array_keys($list_job_status_data)), ],
+            'queue' => ['nullable', 'string', Rule::in($list_queue_types), ],
         ]);
 
         $filters = [
@@ -65,7 +68,8 @@ class ShowQueueMonitorController
                 $request->all()
             );
 
-        $queues = QueueMonitor::getModel()
+        /*
+        $list_queue_types = QueueMonitor::getModel()
             ->newQuery()
             ->select('queue')
             ->groupBy('queue')
@@ -74,6 +78,7 @@ class ShowQueueMonitorController
                 return $monitor->queue;
             })
             ->toArray();
+        */
 
         $metrics = null;
 
@@ -92,7 +97,8 @@ class ShowQueueMonitorController
         return Voyager::view('queue-monitor::voyager.monitor_jobs', [
             'jobs' => $jobs,
             'filters' => $filters,
-            'queues' => $queues,
+            'list_job_status_data' => $list_job_status_data,
+            'list_queue_types' => $list_queue_types,
             'metrics' => $metrics,
             'timeFrame' => $timeFrame,
         ]);
@@ -148,9 +154,10 @@ class ShowQueueMonitorController
      */
     public function destroy(Request $request, Monitor $monitor)
     {
-        $monitor->forceDelete();
+        $status = $monitor->forceDelete();
+
         return [
-            'status' => true,
+            'status' => $status,
         ];
     }
 
@@ -186,8 +193,53 @@ class ShowQueueMonitorController
 
     public function batch_action(Request $request)
     {
+        $response = [
+            'status' => false,
+            'list_messages' => [],
+        ];
 
+        $data = $request->validate([
+            'action' => ['required', 'string', Rule::in(['destroy', 'restart_job_monitor'])],
+            'ids' => ['required', 'string', ],
+        ]);
 
-        dd($request->all());
+        @$data['ids'] = explode(',', $data['ids']);
+
+        if ($data['ids']) {
+
+            switch ($data['action']) {
+                case 'destroy':
+
+                    foreach ($data['ids'] as $id) {
+                        $monitor = Monitor::find($id);
+                        if ($monitor) {
+                            $result = $this->destroy($request, $monitor);
+                            if ($result['status']) {
+                                $response['list_messages'][] = "Job [{$monitor->uuid}] deleted.";
+                            } else {
+                                $response['list_messages'][] = "<span class=\"label label-danger\">ERROR:</span> Job NOT [{$monitor->uuid}] deleted.";
+                            }
+                        }
+                    }
+                    $response['status'] = true;
+                    break;
+
+                case 'restart_job_monitor':
+                    foreach ($data['ids'] as $id) {
+                        $monitor = Monitor::find($id);
+                        if ($monitor) {
+                            $result = $this->restart_job_monitor($request, $monitor);
+                            if ($result['status']) {
+                                $response['list_messages'][] = $result['message'];
+                            } else {
+                                $response['list_messages'][] = "<span class=\"label label-danger\">ERROR:</span> {$result['message']}";
+                            }
+                        }
+                    }
+                    $response['status'] = true;
+                    break;
+            }
+        }
+        return $response;
     }
 }

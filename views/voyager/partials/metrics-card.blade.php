@@ -2,7 +2,7 @@
 
     <div class="panel panel-default">
         <div class="panel-heading" title="{{ __('Last :days days', ['days' => config('queue-monitor.ui.metrics_time_frame') ?? 14]) }}">
-            {{ __($metric->title) }}
+            {{ $metric->title }}
         </div>
         <div class="panel-body">
 

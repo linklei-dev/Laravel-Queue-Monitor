@@ -42,6 +42,32 @@ class QueueMonitor
      */
     public static $model_jobs_failed;
 
+    public static $STATUS_JOB_ALL = 'all';
+    public static $STATUS_JOB_RUNNING = 'running';
+    public static $STATUS_JOB_FAILED = 'failed';
+    public static $STATUS_JOB_SUCCEEDED = 'succeeded';
+
+    public static function getListJobStatusData()
+    {
+        return [
+            self::$STATUS_JOB_ALL => [
+                'label' => "All",
+                'css_class' => '',
+            ],
+            self::$STATUS_JOB_RUNNING => [
+                'label' => "Running",
+                'css_class' => 'label-primary',
+            ],
+            self::$STATUS_JOB_FAILED => [
+                'label' => "Failed",
+                'css_class' => 'label-danger',
+            ],
+            self::$STATUS_JOB_SUCCEEDED => [
+                'label' => "Succeeded",
+                'css_class' => 'label-primary',
+            ],
+        ];
+    }
 
     /**
      * Get the model used to store the monitoring data.
@@ -280,4 +306,5 @@ class QueueMonitor
         }
         return $list;
     }
+
 }

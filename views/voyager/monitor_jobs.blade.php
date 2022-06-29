@@ -45,9 +45,9 @@
                                     <label for="filter_queues">@lang('Queues')</label>
                                     <select name="queue" id="filter_queues" class="form-control">
                                         <option value="all">All</option>
-                                        @foreach($queues as $queue)
+                                        @foreach($list_queue_types as $queue)
                                             <option @if($filters['queue'] === $queue) selected @endif value="{{ $queue }}">
-                                                {{ __($queue) }}
+                                                {{ $queue }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -56,10 +56,9 @@
                                 <div class="form-group col-sm-6">
                                     <label for="filter_show">@lang('Show jobs')</label>
                                     <select name="type" id="filter_show" class="form-control">
-                                        <option @if($filters['type'] === 'all') selected @endif value="all">@lang('All')</option>
-                                        <option @if($filters['type'] === 'running') selected @endif value="running">@lang('Running')</option>
-                                        <option @if($filters['type'] === 'failed') selected @endif value="failed">@lang('Failed')</option>
-                                        <option @if($filters['type'] === 'succeeded') selected @endif value="succeeded">@lang('Succeeded')</option>
+                                        @foreach($list_job_status_data as $job_status_key => $job_status_data)
+                                            <option @if($filters['type'] === $job_status_key) selected @endif value="{{ $job_status_key }}">{{ $job_status_data['label'] }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
 
@@ -76,7 +75,7 @@
                             <form action="{{ route('queue-monitor::batch_action') }}" id="formBatchAction" class="form-inline" method="get">
                                 <div class="form-group col-sm-6">
                                     <label for="select_batch_actions">@lang('Ações em lote')</label>
-                                    <select name="queue" id="select_batch_actions" class="form-control">
+                                    <select name="action" id="select_batch_actions" class="form-control">
                                         <option value="">---</option>
                                         <option value="destroy">@lang("Delete")</option>
                                         <option value="restart_job_monitor">@lang("Restart")</option>
@@ -121,6 +120,9 @@
                                     <th class="dt-not-orderable">
                                         <input type="checkbox" class="select_all"> #
                                     </th>
+                                    <th class="actions dt-not-orderable">
+                                        {{ __('voyager::generic.actions') }}
+                                    </th>
                                     <th class="">@lang('Status')</th>
                                     <th class="">@lang('Queue')</th>
                                     <th class="">@lang('Job')</th>
@@ -132,9 +134,7 @@
                                     @if(config('queue-monitor.ui.show_custom_data'))
                                         <th class="">@lang('Custom Data')</th>
                                     @endif
-                                    <th class="actions dt-not-orderable">
-                                        {{ __('voyager::generic.actions') }}
-                                    </th>
+                                    <th class="">@lang('Payload')</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -145,6 +145,12 @@
                                                 {{ $job->id }}
                                             </td>
                                             <td class="">
+                                                <button class="btn btn-danger btn-delete" data-id="{{ $job->id }}">@lang("Delete")</button>
+                                                <button class="btn btn-primary btn-restart" data-id="{{ $job->id }}">@lang("Restart")</button>
+                                            </td>
+                                            <td class="">
+                                                {!! $job->getJobStatusHtml() !!}
+                                                {{--
                                                 @if(!$job->isFinished())
                                                     <div class="label label-primary">
                                                         @lang('Running')
@@ -158,6 +164,7 @@
                                                         @lang('Failed')
                                                     </div>
                                                 @endif
+                                                --}}
                                             </td>
                                             <td>
                                                 <div class="label label-default">{{ $job->queue }}</div>
@@ -221,11 +228,8 @@
                                                     <textarea rows="4" class="form-control" readonly>{{ json_encode($job->getData(), JSON_PRETTY_PRINT) }}</textarea>
                                                 </td>
                                             @endif
-
                                             <td class="">
-                                                <button class="btn btn-danger btn-delete" data-id="{{ $job->id }}">@lang("Delete")</button>
-                                                <button class="btn btn-primary btn-restart" data-id="{{ $job->id }}">@lang("Restart")</button>
-                                                <button class="btn btn-default btn-show-payload" data-id="{{ $job->id }}">@lang("Show Payload")</button>
+                                                <textarea rows="4" class="form-control" readonly>{{ json_encode($job->payload, JSON_PRETTY_PRINT) }}</textarea>
                                             </td>
                                         </tr>
                                     @empty
@@ -373,7 +377,6 @@
                         api
                             .post(route('queue-monitor::restart_job_monitor', [ id ]))
                             .then((response) => {
-                                console.log('response: ', response);
                                 if (response.data.status) {
                                     Swal.fire({
                                         html: "Job enviado para a fila<br><pre>" + response.data.message + "</pre>",
@@ -413,10 +416,37 @@
                     });
                 $inputIds.val(listIds);
 
-                console.log($selectBatchActions.val(), listIds.length);
                 if ($selectBatchActions.val() && listIds.length > 0) {
-                    //$formBatchAction[0].submit();
 
+                    let formData = new FormData($formBatchAction[0]);
+                    api
+                        .post(route('queue-monitor::batch_action'), formData)
+                        .then((response) => {
+
+                            console.log('response: ', response);
+                            // response.data.status
+                            let message = '';
+                            if (response.data.list_messages.length) {
+
+                                response.data.list_messages.map((msg, i) => {
+                                    message += `<li>${msg}</li>`;
+                                });
+                            }
+
+                            Swal.fire({
+                                html: `Resultado: <ul style="text-align: left;padding: 0 0 0 24px;">${message}</ul>`,
+                                icon: "success",
+                            }).then((res) => {
+                                window.location.reload();
+                            });
+
+                        }).catch((response) => {
+                        console.error("Error", response);
+                        Swal.fire({
+                            html: "Ops! Ocorreu um erro inesperado.",
+                            icon: "error",
+                        });
+                    });
                 }
                 return false;
             });

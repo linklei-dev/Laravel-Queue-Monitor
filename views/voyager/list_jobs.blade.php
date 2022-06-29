@@ -24,11 +24,14 @@
 
         @isset($metrics)
             <div class="div-metrics">
-                @foreach($metrics->all() as $metric)
-                    @include('queue-monitor::voyager.partials.metrics-card', [
-                        'metric' => $metric,
-                    ])
-                @endforeach
+                <ul class="list-metrics">
+                    @foreach($metrics->all() as $metric)
+                        <li>
+                            <span class="title">{{ $metric->title }}:</span>
+                            <span class="value">{{ $metric->value }}</span>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
         @endisset
 
@@ -43,24 +46,13 @@
                                     <label for="filter_queues">@lang('Queues')</label>
                                     <select name="queue" id="filter_queues" class="form-control">
                                         <option value="all">All</option>
-                                        @foreach($queues as $queue)
+                                        @foreach($list_queue_types as $queue)
                                             <option @if($filters['queue'] === $queue) selected @endif value="{{ $queue }}">
-                                                {{ __($queue) }}
+                                                {{ $queue }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
-
-                                <div class="form-group col-sm-6">
-                                    <label for="filter_show">@lang('Show jobs')</label>
-                                    <select name="type" id="filter_show" class="form-control">
-                                        <option @if($filters['type'] === 'all') selected @endif value="all">@lang('All')</option>
-                                        <option @if($filters['type'] === 'running') selected @endif value="running">@lang('Running')</option>
-                                        <option @if($filters['type'] === 'failed') selected @endif value="failed">@lang('Failed')</option>
-                                        <option @if($filters['type'] === 'succeeded') selected @endif value="succeeded">@lang('Succeeded')</option>
-                                    </select>
-                                </div>
-
                                 <div class="form-group col-sm-12">
                                     <button type="submit" class="btn btn-primary">
                                         @lang('Filter')
@@ -203,41 +195,10 @@
 @endsection
 
 @section('javascript')
-
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/jszip-2.5.0/af-2.3.7/b-2.2.2/b-colvis-2.2.2/b-html5-2.2.2/b-print-2.2.2/cr-1.5.5/date-1.1.2/fc-4.0.2/fh-3.2.2/kt-2.6.4/r-2.2.9/rg-1.1.4/rr-1.2.8/sc-2.0.5/sb-1.3.2/sp-2.0.0/sl-1.3.4/sr-1.1.0/datatables.min.css"/>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/jszip-2.5.0/af-2.3.7/b-2.2.2/b-colvis-2.2.2/b-html5-2.2.2/b-print-2.2.2/cr-1.5.5/date-1.1.2/fc-4.0.2/fh-3.2.2/kt-2.6.4/r-2.2.9/rg-1.1.4/rr-1.2.8/sc-2.0.5/sb-1.3.2/sp-2.0.0/sl-1.3.4/sr-1.1.0/datatables.min.js"></script>
-
-    <script>
+    <script type="text/javascript">
         $(document).ready(function () {
 
-            /*
-            let tableListJobsOptions = {!! json_encode(
-                [
-                    "dom" => 'Bfrtlip',
-                    "buttons" => [
-                        'copyHtml5',
-                        'excelHtml5',
-                        'csvHtml5',
-                        'pdfHtml5',
-                        'colvis',
-                    ],
-                    //"order" => $orderColumn,
-                    "language" => __('voyager::datatable'),
-                    "columnDefs" => [
-                        ['targets' => 'dt-not-orderable', 'searchable' =>  false, 'orderable' => false],
-                    ],
-                    "ordering" => true,
-                    "processing" => true,
-                    "serverSide" => true,
-                    "ajax" => route('voyager.users_engagement.historic'),
-                    //"columns" => \dataTypeTableColumns($dataType, $showCheckboxColumn),
-                ]
-            , true) !!};
 
-            let $tableEngagementHistoric = $('#tableListJobs').DataTable(tableListJobsOptions);
-            */
         });
     </script>
 @endsection
