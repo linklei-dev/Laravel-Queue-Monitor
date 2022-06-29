@@ -56,7 +56,7 @@ class QueueMonitorProvider extends ServiceProvider
         $manager = app(QueueManager::class);
 
         $manager->before(static function (JobProcessing $event) {
-            Log::debug('JOB before: ', [$event->job->getJobId()]);
+            //Log::debug('JOB before: ', [$event->job->getJobId()]);
             QueueMonitor::handleJobProcessing($event);
         });
 

@@ -13,7 +13,7 @@ class CreateQueueMonitorTable extends Migration
 
             $table->string('job_id')->index();
             $table->string('name')->nullable();
-            $table->string('queue')->nullable();
+            //$table->string('queue')->nullable();
 
             $table->timestamp('started_at')->nullable()->index();
             $table->string('started_at_exact')->nullable();
@@ -25,7 +25,7 @@ class CreateQueueMonitorTable extends Migration
 
             $table->boolean('failed')->default(false)->index();
 
-            $table->integer('attempt')->default(0);
+            //$table->integer('attempt')->default(0);
             $table->integer('progress')->nullable();
 
             $table->longText('exception')->nullable();
@@ -33,6 +33,14 @@ class CreateQueueMonitorTable extends Migration
             $table->text('exception_class')->nullable();
 
             $table->longText('data')->nullable();
+
+            // Dados exclusivos do JOB:
+            $table->string('uuid')->nullable();
+            $table->text('connection')->nullable();
+            $table->text('queue')->nullable();
+            $table->unsignedTinyInteger('attempt')->default(0);
+            $table->longText('payload')->nullable();
+            $table->timestamp('available_at')->nullable();
         });
     }
 

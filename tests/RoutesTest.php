@@ -15,10 +15,11 @@ class RoutesTest extends TestCase
             RouteFacade::queueMonitor();
         });
 
-        $this->assertInstanceOf(Route::class, $route = app(Router::class)->getRoutes()->getByAction(ShowQueueMonitorController::class));
+        $route = app(Router::class)->getRoutes()->getByAction('romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController@index');
+        $this->assertInstanceOf(Route::class, $route);
 
         $this->assertEquals('jobs', $route->uri);
-        $this->assertEquals('\romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController', $route->getAction('controller'));
+        $this->assertEquals('\romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController@index', $route->getAction('controller'));
     }
 
     public function testRouteCreationInNamespace()
@@ -27,9 +28,10 @@ class RoutesTest extends TestCase
             RouteFacade::queueMonitor();
         });
 
-        $this->assertInstanceOf(Route::class, $route = app(Router::class)->getRoutes()->getByAction(ShowQueueMonitorController::class));
+        $route = app(Router::class)->getRoutes()->getByAction('romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController@index'); //->getByAction(ShowQueueMonitorController::class);
+        $this->assertInstanceOf(Route::class, $route);
 
         $this->assertEquals('jobs', $route->uri);
-        $this->assertEquals('\romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController', $route->getAction('controller'));
+        $this->assertEquals('\romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController@index', $route->getAction('controller'));
     }
 }
