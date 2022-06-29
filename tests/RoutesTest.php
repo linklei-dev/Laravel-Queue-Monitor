@@ -28,7 +28,7 @@ class RoutesTest extends TestCase
             RouteFacade::queueMonitor();
         });
 
-        $route = app(Router::class)->getRoutes()->getByAction('romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController@index'); //->getByAction(ShowQueueMonitorController::class);
+        $route = app(Router::class)->getRoutes()->getByAction('romanzipp\QueueMonitor\Controllers\ShowQueueMonitorController@index'); // ->getByAction(ShowQueueMonitorController::class);
         $this->assertInstanceOf(Route::class, $route);
 
         $this->assertEquals('jobs', $route->uri);
