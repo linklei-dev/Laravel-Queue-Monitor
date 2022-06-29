@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         php: [7.2, 7.3, 7.4, 8.0]
-        composer-dependency: [prefer-stable, prefer-lowest]
+        composer-dependency: [prefer-stable]
 
     name: "PHP ${{ matrix.php }} - ${{ matrix.composer-dependency }}"
 
