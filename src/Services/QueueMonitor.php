@@ -51,19 +51,19 @@ class QueueMonitor
     {
         return [
             self::$STATUS_JOB_ALL => [
-                'label' => "All",
+                'label' => 'All',
                 'css_class' => '',
             ],
             self::$STATUS_JOB_RUNNING => [
-                'label' => "Running",
+                'label' => 'Running',
                 'css_class' => 'label-primary',
             ],
             self::$STATUS_JOB_FAILED => [
-                'label' => "Failed",
+                'label' => 'Failed',
                 'css_class' => 'label-danger',
             ],
             self::$STATUS_JOB_SUCCEEDED => [
-                'label' => "Succeeded",
+                'label' => 'Succeeded',
                 'css_class' => 'label-primary',
             ],
         ];
@@ -308,5 +308,4 @@ class QueueMonitor
 
         return $list;
     }
-
 }

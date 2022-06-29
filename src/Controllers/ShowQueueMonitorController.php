@@ -31,8 +31,8 @@ class ShowQueueMonitorController
         $list_job_status_data = QueueMonitor::getListJobStatusData();
 
         $data = $request->validate([
-            'type' => ['nullable', 'string', Rule::in(array_keys($list_job_status_data)), ],
-            'queue' => ['nullable', 'string', Rule::in($list_queue_types), ],
+            'type' => ['nullable', 'string', Rule::in(array_keys($list_job_status_data))],
+            'queue' => ['nullable', 'string', Rule::in($list_queue_types)],
         ]);
 
         $filters = [
@@ -200,16 +200,14 @@ class ShowQueueMonitorController
 
         $data = $request->validate([
             'action' => ['required', 'string', Rule::in(['destroy', 'restart_job_monitor'])],
-            'ids' => ['required', 'string', ],
+            'ids' => ['required', 'string'],
         ]);
 
         @$data['ids'] = explode(',', $data['ids']);
 
         if ($data['ids']) {
-
             switch ($data['action']) {
                 case 'destroy':
-
                     foreach ($data['ids'] as $id) {
                         $monitor = Monitor::find($id);
                         if ($monitor) {
@@ -240,6 +238,7 @@ class ShowQueueMonitorController
                     break;
             }
         }
+
         return $response;
     }
 }
