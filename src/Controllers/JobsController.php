@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metric;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metrics;
-use romanzipp\QueueMonitor\Models\Contracts\MonitorContract;
 use romanzipp\QueueMonitor\Services\QueueMonitor;
 use TCG\Voyager\Facades\Voyager;
 
@@ -19,7 +18,7 @@ class JobsController
         $list_queue_types = QueueMonitor::getListQueueTypes();
 
         $data = $request->validate([
-            //'type' => ['nullable', 'string', Rule::in(['all', 'running', 'failed', 'succeeded'])],
+            // 'type' => ['nullable', 'string', Rule::in(['all', 'running', 'failed', 'succeeded'])],
             'queue' => ['nullable', 'string', Rule::in($list_queue_types)],
         ]);
 

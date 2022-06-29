@@ -129,14 +129,15 @@ class Monitor extends Model implements MonitorContract
         $list = QueueMonitor::getListJobStatusData();
         $data = null;
         $html = '';
-        if (!$this->isFinished()) {
+        if ( ! $this->isFinished()) {
             $data = $list[QueueMonitor::$STATUS_JOB_RUNNING];
-        } else if ($this->hasSucceeded()) {
+        } elseif ($this->hasSucceeded()) {
             $data = $list[QueueMonitor::$STATUS_JOB_SUCCEEDED];
         } else {
             $data = $list[QueueMonitor::$STATUS_JOB_FAILED];
         }
         $html = "<span class=\"label {$data['css_class']}\">{$data['label']}</span>";
+
         return $html;
     }
 
