@@ -62,54 +62,49 @@
                             </form>
                         </div>
 
-                        <div class="table-responsive">
-                            {{--
-                            <table id="tableEngagementHistoric" class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Total Usuários</th>
-                                        <th>Usuários Ativos</th>
-                                        <th>Usuários status cadastro incompleto</th>
-                                        <th>Usuários email verificado</th>
-                                        <th>Usuários OAB verificada</th>
-                                        <th>Usuários email e OAB verificados</th>
-                                        <th>Total LinkLikes</th>
-                                        <th>Total Artigos</th>
-                                        <th>Total Posts</th>
-                                        <th>Total Peças e Modelos</th>
-                                        <th>Total Comentários</th>
-                                        <th>Total Grupos de Discussão</th>
-                                        <th>Total usuários adicionados a rede pessoal</th>
-                                        <th>Total usuários distintos adicionados a rede pessoal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                            --}}
+                        <div class="row">
+                            <form action="{{ route('queue-monitor::batch_action') }}" id="formBatchAction" class="form-inline" method="get">
+                                <div class="form-group col-sm-6">
+                                    <label for="select_batch_actions">@lang('Ações em lote')</label>
+                                    <select name="action" id="select_batch_actions" class="form-control">
+                                        <option value="">---</option>
+                                        <option value="destroy">@lang("Delete")</option>
+                                    </select>
+                                    <input type="hidden" value="" name="ids" id="input_ids" />
+                                    <button type="submit" class="btn btn-primary">
+                                        @lang('Executar')
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
 
+                        <div class="table-responsive">
                             <table id="tableListJobs" class="table table-hover table-condensed">
                                 <thead>
                                 <tr>
                                     <th class="dt-not-orderable">
                                         <input type="checkbox" class="select_all"> #
                                     </th>
+                                    <th class="actions dt-not-orderable">
+                                        {{ __('voyager::generic.actions') }}
+                                    </th>
                                     <th class="">@lang('Queue')</th>
                                     <th class="">@lang('Job')</th>
                                     <th class="">@lang('Run in')</th>
                                     <th class="">@lang('Max tries')</th>
                                     <th class="">@lang('Created at')</th>
-                                    <th class="actions dt-not-orderable">
-                                        {{ __('voyager::generic.actions') }}
-                                    </th>
+                                    <th class="">@lang('Payload')</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($jobs as $job)
-                                        <tr>
+                                        <tr class="item_{{ $job->id }}">
                                             <td>
-                                                <input type="checkbox" name="row_id" id="checkbox_{{ $job->id }}" value="{{ $job->id }}">
+                                                <input type="checkbox" name="row_id" id="checkbox_{{ $job->id }}" class="input_check" value="{{ $job->id }}">
                                                 {{ $job->id }}
+                                            </td>
+                                            <td class="">
+                                                <button class="btn btn-danger btn-delete" data-id="{{ $job->id }}">@lang("Delete")</button>
                                             </td>
                                             <td>
                                                 <div class="label label-default">{{ $job->queue }}</div>
@@ -120,19 +115,14 @@
                                             <td>
                                                 {{ $job->reserved_at_formated }}
                                             </td>
-
                                             <td>
                                                 {{ $job->max_tries }}
                                             </td>
-
                                             <td>
                                                 {{ $job->created_at->translatedFormat('d/m/Y H:i:s') }}
                                             </td>
-
                                             <td class="">
-                                                <button class="btn btn-danger" data-id="{{ $job->id }}">@lang("Delete")</button>
-                                                <button class="btn btn-primary" data-id="{{ $job->id }}">@lang("Restart")</button>
-                                                <button class="btn btn-default" data-id="{{ $job->id }}">@lang("Show Payload")</button>
+                                                <textarea rows="4" class="form-control" readonly>{{ json_encode($job->payload, JSON_PRETTY_PRINT) }}</textarea>
                                             </td>
                                         </tr>
                                     @empty
@@ -198,7 +188,132 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
+            let $tableListJobs = $("#tableListJobs");
 
+            // Seleciona/deseleciona todas as linhsa da tabela:
+            $tableListJobs.find(".select_all").on('change', function(e) {
+                if (this.checked) {
+                    // Seleciona todos:
+                    $tableListJobs.find('.input_check').prop('checked', true);
+                } else {
+                    // Deseleciona todos:
+                    $tableListJobs.find('.input_check').prop('checked', false);
+                }
+            });
+
+            $tableListJobs.find(".btn-delete").on('click', function(e) {
+                e.preventDefault();
+                let $this = $(this);
+                let id = $this.data('id');
+
+                Swal.fire({
+                    html: "<p>Tem certeza que deseja deletar este Job?</p>",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    showConfirmButton: true,
+                    scrollbarPadding: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonText: 'Sim, excluir!',
+                    cancelButtonText: 'Não, cancelar',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-secondary'
+                    },
+                    buttonsStyling: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: () => {
+                        api
+                            .delete(route('queue-monitor::delete_job_queue', [ id ]))
+                            .then((response) => {
+                                if (response.status) {
+                                    Swal.fire({
+                                        html: "Job removido",
+                                        icon: "success",
+                                    });
+                                    $tableListJobs.find(".item_" + id).remove();
+                                }
+
+                            }).catch((response) => {
+                            console.error("Error", response);
+                            Swal.fire({
+                                html: "Ops! Ocorreu um erro inesperado.",
+                                icon: "error",
+                            });
+                        });
+
+                    },
+                });
+            });
+
+            let $formBatchAction = $("#formBatchAction");
+            $formBatchAction.on('submit', function (e) {
+                e.preventDefault();
+                let $inputIds = $formBatchAction.find('#input_ids');
+                let $selectBatchActions = $formBatchAction.find('#select_batch_actions');
+
+                $inputIds.val('');
+                let listIds = [];
+                $tableListJobs
+                    .find('.input_check:checked')
+                    .serializeArray()
+                    .map(function(item, i) {
+                        listIds.push(item.value);
+                    });
+                $inputIds.val(listIds);
+
+                let action = $selectBatchActions.val();
+                if (action && listIds.length > 0) {
+
+                    Swal.fire({
+                        html: `<p>Tem certeza que deseja executar [${action}] para ${listIds.length} Jobs?</p>`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        showConfirmButton: true,
+                        scrollbarPadding: true,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        confirmButtonText: 'Sim!',
+                        cancelButtonText: 'Não, cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        buttonsStyling: false,
+                        showLoaderOnConfirm: true,
+                        preConfirm: () => {
+
+                            let formData = new FormData($formBatchAction[0]);
+                            api
+                                .post(route('queue-monitor::batch_action_job_queue'), formData)
+                                .then((response) => {
+                                    let message = '';
+                                    if (response.data.list_messages.length) {
+
+                                        response.data.list_messages.map((msg, i) => {
+                                            message += `<li>${msg}</li>`;
+                                        });
+                                    }
+
+                                    Swal.fire({
+                                        html: `Resultado: <ul style="text-align: left;padding: 0 0 0 24px;">${message}</ul>`,
+                                        icon: "success",
+                                    }).then((res) => {
+                                        window.location.reload();
+                                    });
+
+                                }).catch((response) => {
+                                console.error("Error", response);
+                                Swal.fire({
+                                    html: "Ops! Ocorreu um erro inesperado.",
+                                    icon: "error",
+                                });
+                            });
+                        }
+                    });
+                }
+                return false;
+            });
         });
     </script>
 @endsection

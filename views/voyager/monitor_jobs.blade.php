@@ -71,7 +71,6 @@
                         </div>
 
                         <div class="row">
-
                             <form action="{{ route('queue-monitor::batch_action') }}" id="formBatchAction" class="form-inline" method="get">
                                 <div class="form-group col-sm-6">
                                     <label for="select_batch_actions">@lang('Ações em lote')</label>
@@ -416,36 +415,53 @@
                     });
                 $inputIds.val(listIds);
 
-                if ($selectBatchActions.val() && listIds.length > 0) {
+                let action = $selectBatchActions.val();
+                if (action && listIds.length > 0) {
 
-                    let formData = new FormData($formBatchAction[0]);
-                    api
-                        .post(route('queue-monitor::batch_action'), formData)
-                        .then((response) => {
+                    Swal.fire({
+                        html: `<p>Tem certeza que deseja executar [${action}] para ${listIds.length} Jobs?</p>`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        showConfirmButton: true,
+                        scrollbarPadding: true,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        confirmButtonText: 'Sim!',
+                        cancelButtonText: 'Não, cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        buttonsStyling: false,
+                        showLoaderOnConfirm: true,
+                        preConfirm: () => {
+                            let formData = new FormData($formBatchAction[0]);
+                            api
+                                .post(route('queue-monitor::batch_action'), formData)
+                                .then((response) => {
+                                    let message = '';
+                                    if (response.data.list_messages.length) {
 
-                            console.log('response: ', response);
-                            // response.data.status
-                            let message = '';
-                            if (response.data.list_messages.length) {
+                                        response.data.list_messages.map((msg, i) => {
+                                            message += `<li>${msg}</li>`;
+                                        });
+                                    }
 
-                                response.data.list_messages.map((msg, i) => {
-                                    message += `<li>${msg}</li>`;
+                                    Swal.fire({
+                                        html: `Resultado: <ul style="text-align: left;padding: 0 0 0 24px;">${message}</ul>`,
+                                        icon: "success",
+                                    }).then((res) => {
+                                        window.location.reload();
+                                    });
+
+                                }).catch((response) => {
+                                console.error("Error", response);
+                                Swal.fire({
+                                    html: "Ops! Ocorreu um erro inesperado.",
+                                    icon: "error",
                                 });
-                            }
-
-                            Swal.fire({
-                                html: `Resultado: <ul style="text-align: left;padding: 0 0 0 24px;">${message}</ul>`,
-                                icon: "success",
-                            }).then((res) => {
-                                window.location.reload();
                             });
-
-                        }).catch((response) => {
-                        console.error("Error", response);
-                        Swal.fire({
-                            html: "Ops! Ocorreu um erro inesperado.",
-                            icon: "error",
-                        });
+                        }
                     });
                 }
                 return false;

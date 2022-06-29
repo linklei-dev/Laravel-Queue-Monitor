@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metric;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metrics;
+use romanzipp\QueueMonitor\Models\Job;
 use romanzipp\QueueMonitor\Services\QueueMonitor;
 use TCG\Voyager\Facades\Voyager;
 
@@ -77,5 +78,51 @@ class JobsController
         }
 
         return $metrics;
+    }
+
+    public function destroy(Request $request, Job $job)
+    {
+        $status = $job->forceDelete();
+
+        return [
+            'status' => $status,
+        ];
+    }
+
+    public function batch_action(Request $request)
+    {
+        $response = [
+            'status' => false,
+            'list_messages' => [],
+        ];
+
+        $data = $request->validate([
+            'action' => ['required', 'string', Rule::in(['destroy',])],
+            'ids' => ['required', 'string'],
+        ]);
+
+        @$data['ids'] = explode(',', $data['ids']);
+
+        if ($data['ids']) {
+            switch ($data['action']) {
+                case 'destroy':
+                    foreach ($data['ids'] as $id) {
+                        $job = Job::find($id);
+                        if ($job) {
+                            $id_to_delete = $job->id;
+                            $result = $this->destroy($request, $job);
+                            if ($result['status']) {
+                                $response['list_messages'][] = "Job [{$id_to_delete}] deleted.";
+                            } else {
+                                $response['list_messages'][] = "<span class=\"label label-danger\">ERROR:</span> Job NOT [{$monitor->uuid}] deleted.";
+                            }
+                        }
+                    }
+                    $response['status'] = true;
+                    break;
+            }
+        }
+
+        return $response;
     }
 }
