@@ -64,7 +64,7 @@ class QueueMonitor
             ],
             self::$STATUS_JOB_SUCCEEDED => [
                 'label' => 'Succeeded',
-                'css_class' => 'label-primary',
+                'css_class' => 'label-success',
             ],
         ];
     }
@@ -187,7 +187,6 @@ class QueueMonitor
         ];
 
         // ////////////////////////////////////////
-
         /*
         Exemplo de dados em $event->job->payload() = array:
         [uuid] => a505a60c-006e-4193-ae63-5169dc8abacf
@@ -207,7 +206,20 @@ class QueueMonitor
         */
         // //////////////////////////////////////////////////
 
-        $model::query()->create($data);
+        // Reexecuao de Job que falhou:
+        $last_job = null;
+        if ($job->attempts() > 0) {
+            // Se for uma reexecucao de job que ja havia falhado, atualiza o registro do monitor:
+            $last_job = $model::lastUuid($job->uuid())->first();
+        }
+
+        if ($last_job) {
+            // SE encontrou um ultimo JOB com o mesmo UUID, atualiza os dados:
+            $last_job->update($data);
+        } else {
+            // SE NAO, cria um novo registro:
+            $model::query()->create($data);
+        }
     }
 
     /**

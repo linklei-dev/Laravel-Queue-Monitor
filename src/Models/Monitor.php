@@ -118,6 +118,12 @@ class Monitor extends Model implements MonitorContract
         $query->where('failed', false);
     }
 
+    public function scopeLastUuid(Builder $query, string $uuid): void
+    {
+        $query->where('uuid', $uuid)
+            ->orderBy('id', 'desc');
+    }
+
     /*
      *--------------------------------------------------------------------------
      * Methods

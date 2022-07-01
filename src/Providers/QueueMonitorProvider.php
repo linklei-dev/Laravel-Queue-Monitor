@@ -74,6 +74,7 @@ class QueueMonitorProvider extends ServiceProvider
         $manager->exceptionOccurred(static function (JobExceptionOccurred $event) {
             QueueMonitor::handleJobExceptionOccurred($event);
         });
+
     }
 
     /**
