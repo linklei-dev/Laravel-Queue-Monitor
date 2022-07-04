@@ -59,6 +59,25 @@ class ExampleJob implements ShouldQueue
 
 **Important!** You need to implement the `Illuminate\Contracts\Queue\ShouldQueue` interface to your job class. Otherwise, Laravel will not dispatch any events containing status information for monitoring the job.
 
+## Configure composer.json and config/app.php
+
+- Add autoload psr-4 in the composer.json file from your project root, like this:
+```sh
+"autoload": {
+    "psr-4": {
+        "romanzipp\\QueueMonitor\\": "vendor/linklei-dev/laravel-queue-monitor/src/"
+    },
+}
+```
+
+- Add QueueMonitorProvider in the array "providers" on config file (config/app.php) from your projct root, after natives providers from laravel, like this:
+```php
+/*
+* Package Service Providers...
+*/
+romanzipp\QueueMonitor\Providers\QueueMonitorProvider::class,
+```
+
 ## UI
 
 You can enable the optional UI routes by calling `Route::queueMonitor()` inside your route file, similar to the official [ui scaffolding](https://github.com/laravel/ui).
