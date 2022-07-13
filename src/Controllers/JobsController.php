@@ -2,9 +2,11 @@
 
 namespace romanzipp\QueueMonitor\Controllers;
 
+use App\Http\Controllers\VoyagerBaseController;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 use Illuminate\Validation\Rule;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metric;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metrics;
@@ -12,8 +14,14 @@ use romanzipp\QueueMonitor\Models\Job;
 use romanzipp\QueueMonitor\Services\QueueMonitor;
 use TCG\Voyager\Facades\Voyager;
 
-class JobsController
+class JobsController extends VoyagerBaseController
 {
+    public function __construct()
+    {
+        $this->construct_has_permission('browse_queue-monitor-list-jobs');
+        parent::__construct();
+    }
+
     public function list_jobs(Request $request)
     {
         $list_queue_types = QueueMonitor::getListQueueTypes();
@@ -80,9 +88,13 @@ class JobsController
         return $metrics;
     }
 
-    public function destroy(Request $request, Job $job)
+    public function destroy(Request $request, $id = null)
     {
-        $status = $job->forceDelete();
+        $job = QueueMonitor::getModelQueueJobs()::find($id);
+        $status = false;
+        if ($job) {
+            $status = $job->forceDelete();
+        }
 
         return [
             'status' => $status,

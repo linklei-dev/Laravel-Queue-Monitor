@@ -2,6 +2,7 @@
 
 namespace romanzipp\QueueMonitor\Controllers;
 
+use App\Http\Controllers\VoyagerBaseController;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -10,14 +11,19 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metric;
 use romanzipp\QueueMonitor\Controllers\Payloads\Metrics;
-use romanzipp\QueueMonitor\Models\Contracts\MonitorContract;
-use romanzipp\QueueMonitor\Models\Job;
 use romanzipp\QueueMonitor\Models\Monitor;
 use romanzipp\QueueMonitor\Services\QueueMonitor;
 use TCG\Voyager\Facades\Voyager;
 
-class ShowQueueMonitorController
+class ShowQueueMonitorController extends VoyagerBaseController
 {
+
+    public function __construct()
+    {
+        $this->construct_has_permission('browse_queue-monitor');
+        parent::__construct();
+    }
+
     /**
      * @param \Illuminate\Http\Request $request
      *
@@ -153,9 +159,13 @@ class ShowQueueMonitorController
      *
      * @return bool[]
      */
-    public function destroy(Request $request, Monitor $monitor)
+    public function destroy(Request $request, $id = null)
     {
-        $status = $monitor->forceDelete();
+        $monitor = QueueMonitor::getModel()::find($id);
+        $status = false;
+        if ($monitor) {
+            $status = $monitor->forceDelete();
+        }
 
         return [
             'status' => $status,
