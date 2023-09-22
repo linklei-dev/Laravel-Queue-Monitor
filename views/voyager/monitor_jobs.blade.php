@@ -127,6 +127,7 @@
                                     <th class="">@lang('Job')</th>
                                     <th class="">@lang('Details')</th>
                                     <th class="">@lang('Progress')</th>
+                                    <th class="">@lang('Attempt')</th>
                                     <th class="">@lang('Duration')</th>
                                     <th class="">@lang('Started')</th>
                                     <th class="">@lang('Error')</th>
@@ -203,6 +204,10 @@
                                                 @else
                                                     -
                                                 @endif
+                                            </td>
+
+                                            <td>
+                                                {{ $job->attempt }}
                                             </td>
 
                                             <td class="">

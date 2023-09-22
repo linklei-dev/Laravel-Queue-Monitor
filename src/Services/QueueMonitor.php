@@ -172,17 +172,20 @@ class QueueMonitor
 
         Log::debug('getJobId: ', ['jobId' => self::getJobId($job)]);
 
+        $queue_name = $job->getQueue();
+        $queue_name_list = explode("/", $queue_name);
+        $queue_name = end($queue_name_list);
+
         $data = [
             'job_id' => self::getJobId($job),
             'name' => $job->resolveName(),
-            'queue' => $job->getQueue(),
             'started_at' => $now,
             'started_at_exact' => $now->format(self::TIMESTAMP_EXACT_FORMAT),
             'attempt' => $job->attempts(),
 
             'uuid' => $job->uuid(),
             'connection' => $job->getConnectionName(),
-            'queue' => $job->getQueue(),
+            'queue' => $queue_name,
             'payload' => $job->payload(),
         ];
 
