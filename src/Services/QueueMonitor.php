@@ -167,7 +167,6 @@ class QueueMonitor
         }
 
         $now = Carbon::now();
-
         $model = self::getModel();
 
         Log::debug('getJobId: ', ['jobId' => self::getJobId($job)]);
