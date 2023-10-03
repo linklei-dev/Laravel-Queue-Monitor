@@ -35,11 +35,13 @@ class ShowQueueMonitorController extends VoyagerBaseController
 
         $list_queue_types = QueueMonitor::getListQueueTypes();
         $list_job_status_data = QueueMonitor::getListJobStatusData();
+        $list_queue_types = ["all", ...$list_queue_types];
 
         $data = $request->validate([
             'type' => ['nullable', 'string', Rule::in(array_keys($list_job_status_data))],
             'queue' => ['nullable', 'string', Rule::in($list_queue_types)],
         ]);
+
 
         $filters = [
             'type' => $data['type'] ?? 'all',

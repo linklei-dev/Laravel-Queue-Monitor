@@ -44,7 +44,6 @@
                                 <div class="form-group col-sm-6">
                                     <label for="filter_queues">@lang('Queues')</label>
                                     <select name="queue" id="filter_queues" class="form-control">
-                                        <option value="all">All</option>
                                         @foreach($list_queue_types as $queue)
                                             <option @if($filters['queue'] === $queue) selected @endif value="{{ $queue }}">
                                                 {{ $queue }}
@@ -63,6 +62,16 @@
                                 </div>
 
                                 <div class="form-group col-sm-12">
+                                    @if ($errors->any())
+                                        <div class="text-danger">
+                                            <ul>
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+
                                     <button type="submit" class="btn btn-primary">
                                         @lang('Filter')
                                     </button>
